@@ -27,7 +27,6 @@ function ProjectSelector({ updateSelectedProjectState }) {
         // Check if workspaceId is not null before fetching projects
         if (workspaceId) {
           const data = await getWorkspaceProjects(workspaceId, zeplin);
-          console.log(data);
           setProjects(data);
         }
       } catch (error) {
@@ -42,11 +41,11 @@ function ProjectSelector({ updateSelectedProjectState }) {
   }, [workspaceId]);
 
   return (
-    <FormControl fullWidth>
-      <InputLabel>Select Project</InputLabel>
-      <Select placeholder="Select Project" label="Project" onChange={handleOnSelect}>
+    <FormControl fullWidth disabled={!workspaceId}>
+      <InputLabel>{!workspaceId ? 'Please Select Workspace First' : 'Select Project'}</InputLabel>
+      <Select placeholder={!workspaceId ?  'Select Workspace' : 'Select Project'} label="Project" onChange={handleOnSelect}>
         {projects.length > 0 && projects.map((project) => (
-          <MenuItem key={project.id} value={project.id}>
+          <MenuItem key={project.id} value={project}>
             {project.name}
           </MenuItem>
         ))}

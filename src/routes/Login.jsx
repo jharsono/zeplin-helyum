@@ -1,8 +1,7 @@
 import React, {
-  useState, useEffect, useCallback, useContext,
+  useState, useEffect, useCallback,
 } from 'react';
 import { ZeplinApi, Configuration } from '@zeplin/sdk';
-import { ZeplinClientContext } from '../services/ZeplinClientContext';
 
 const { VITE_ZEPLIN_CLIENT_ID, VITE_ZEPLIN_CLIENT_SECRET } = import.meta.env;
 
@@ -18,7 +17,6 @@ function Login() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [accessTokenAcquired, setAccessTokenAcquired] = useState(false);
   const [username, setUsername] = useState('');
-  const { setZeplinClient } = useContext(ZeplinClientContext);
 
   const extractCodeFromURL = useCallback(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -37,16 +35,16 @@ function Login() {
         clientSecret: VITE_ZEPLIN_CLIENT_SECRET,
         redirectUri: 'http://localhost:5173/',
       });
-      const { accessToken } = createTokenResponse.data;
+      const { accessToken, refreshToken } = createTokenResponse.data;
       zeplin = new ZeplinApi(new Configuration({ accessToken }));
       localStorage.setItem('zeplinAccessToken', accessToken);
+      localStorage.setItem('zeplinRefreshToken', refreshToken);
       setAccessTokenAcquired(true);
       // Update the Zeplin client context for access in other parts of app
-      setZeplinClient(zeplin); // Use setZeplinClient to update the context
     } catch (error) {
       console.error('Error getting access token:', error);
     }
-  }, [code, setZeplinClient]);
+  }, [code]);
 
   const redirectToRoot = useCallback(() => {
     window.location.href = '/';

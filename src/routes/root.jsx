@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import WorkspaceSelector from '../components/WorkspaceSelector';
 import { WorkspaceIdProvider } from '../services/workspaceContext';
-import { ZeplinClientProvider } from '../services/ZeplinClientContext';
 
 const pages = [
   {
@@ -10,12 +9,12 @@ const pages = [
     title: 'Download Project Annotations',
   },
   {
-    route: 'download-project-assets',
-    title: 'Download Project Assets',
-  },
-  {
     route: 'download-project-notes',
     title: 'Download Project Notes',
+  },
+  {
+    route: 'download-project-assets',
+    title: 'Download Project Assets',
   },
   {
     route: 'download-styleguide-icons',
@@ -33,7 +32,6 @@ const pages = [
 
 export default function Root() {
   return (
-    <ZeplinClientProvider>
       <WorkspaceIdProvider>
         <div id="sidebar">
           <WorkspaceSelector />
@@ -53,6 +51,5 @@ export default function Root() {
           <Outlet />
         </div>
       </WorkspaceIdProvider>
-    </ZeplinClientProvider>
   );
 }

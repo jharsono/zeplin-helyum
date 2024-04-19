@@ -3,11 +3,6 @@ import axios from 'axios';
 import rateLimit from 'axios-rate-limit';
 import { json2csv } from 'json-2-csv';
 
-// Set your dotenv config to the root directory where the .env file lives
-
-// Extract PAT and Workspace from .env
-const { VITE_ZEPLIN_PERSONAL_ACCESS_TOKEN } = import.meta.env;
-
 // use Commander to take in options from the command line
 
 // Zeplin API rate limit is 200 requests per user per minute.
@@ -18,7 +13,7 @@ const http = rateLimit(axios.create(), { maxRequests: 180, perMilliseconds: 6000
 
 const zeplin = new ZeplinApi(
   new Configuration(
-    { accessToken: VITE_ZEPLIN_PERSONAL_ACCESS_TOKEN },
+    { accessToken: localStorage.getItem('zeplinAccessToken') },
   ),
   undefined,
   http,
