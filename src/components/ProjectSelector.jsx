@@ -4,10 +4,11 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
-import axios from 'axios';
+import { ZeplinApi, Configuration } from '@zeplin/sdk';
 import { useWorkspaceId } from '../services/workspaceContext';
+import getWorkspaceProjects from '../services/getWorkspaceProjects';
 
-const { VITE_EXPRESS_SERVER_BASE_URL } = import.meta.env;
+const zeplin = new ZeplinApi(new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }));
 
 function ProjectSelector({ updateSelectedProjectState }) {
   const [projects, setProjects] = useState([]);
@@ -25,8 +26,7 @@ function ProjectSelector({ updateSelectedProjectState }) {
       try {
         // Check if workspaceId is not null before fetching projects
         if (workspaceId) {
-          const { data } = await axios.get(`${VITE_EXPRESS_SERVER_BASE_URL}/api/v1/workspaces/${workspaceId}/projects`);
-          console.log(data);
+          const data = await getWorkspaceProjects(workspaceId, zeplin);
           setProjects(data);
         }
       } catch (error) {
@@ -41,11 +41,11 @@ function ProjectSelector({ updateSelectedProjectState }) {
   }, [workspaceId]);
 
   return (
-    <FormControl fullWidth>
-      <InputLabel>Select Project</InputLabel>
-      <Select placeholder="Select Project" label="Project" onChange={handleOnSelect}>
+    <FormControl fullWidth disabled={!workspaceId}>
+      <InputLabel>{!workspaceId ? 'Please Select Workspace First' : 'Select Project'}</InputLabel>
+      <Select placeholder={!workspaceId ?  'Select Workspace' : 'Select Project'} label="Project" onChange={handleOnSelect}>
         {projects.length > 0 && projects.map((project) => (
-          <MenuItem key={project.id} value={project.id}>
+          <MenuItem key={project.id} value={project}>
             {project.name}
           </MenuItem>
         ))}

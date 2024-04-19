@@ -4,6 +4,7 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from 'react-router-dom';
+import CssBaseline from '@mui/material/CssBaseline';
 import './index.css';
 import Root from './routes/root';
 import ErrorPage from './pages/error-page';
@@ -15,11 +16,12 @@ import DownloadProjectNotes from './routes/DownloadProjectNotes';
 import DownloadWorkspaceScreens from './routes/DownloadWorkspaceScreens';
 import DownloadStyleguideIcons from './routes/DownloadStyleguideIcons';
 import GenerateTailwindTheme from './routes/GenerateTailwindTheme';
+import Login from './routes/Login';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Root />,
+    element: localStorage.getItem('zeplinAccessToken') ? <Root /> : <Login />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -52,6 +54,7 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <CssBaseline />
     <RouterProvider router={router} />
   </React.StrictMode>,
 );
