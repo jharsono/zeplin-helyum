@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import axios from 'axios';
+import { ZeplinApi, Configuration } from '@zeplin/sdk';
+
 import { useWorkspaceId } from '../services/workspaceContext';
+import getWorkspaces from '../services/getWorkspaces';
+
+const zeplin = new ZeplinApi(new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }));
 
 const { VITE_EXPRESS_SERVER_BASE_URL } = import.meta.env;
 
@@ -19,8 +23,7 @@ function WorkspaceSelector() {
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
-        const { data } = await axios.get(`${VITE_EXPRESS_SERVER_BASE_URL}/api/v1/workspaces`);
-        console.log('workspaces', data);
+        const data = await getWorkspaces(zeplin);
         setWorkspaces(data);
         setLoading(false);
       } catch (error) {
