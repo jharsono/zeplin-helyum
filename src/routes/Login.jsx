@@ -36,9 +36,8 @@ function Login() {
   const [code, setCode] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [accessTokenAcquired, setAccessTokenAcquired] = useState(false);
-  const [username, setUsername] = useState('');
   const [redirectUrl, setRedirectUrl] = useState('');
-
+  
   const extractCodeFromURL = useCallback(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const codeParam = urlParams.get('code');
@@ -98,7 +97,7 @@ function Login() {
 
   useEffect(() => {
     // Calculate redirect URL with the updated code challenge
-    (async () => {
+    const calculateCodeChallenge = async () => {
       const codeChallenge = await sha256(getCodeVerifier());
       setRedirectUrl(zeplin.authorization.getAuthorizationUrl({
         clientId: VITE_ZEPLIN_CLIENT_ID,
@@ -106,14 +105,15 @@ function Login() {
         codeChallenge,
         codeChallengeMethod: 'S256',
       }));
-    })();
+    };
+    calculateCodeChallenge();
   }, []);
 
   return (
     <>
       {accessTokenAcquired && <div className="card">{username}</div>}
       {!accessTokenAcquired && (
-        <div className="card">
+        <div className="login">
           <button type="button">
             <a href={redirectUrl}>Login</a>
           </button>
