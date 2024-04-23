@@ -11,7 +11,7 @@ export default function DownloadProjectAnnotations() {
   const handleExport = async () => {
     setIsLoading(true);
     try {
-      const csv = await generateProjectNotes(selectedProject);
+      const csv = await generateProjectNotes(selectedProject.id);
       console.log(csv);
       const csvData = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       FileSaver.saveAs(csvData, 'notes.csv');
