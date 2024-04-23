@@ -7,9 +7,30 @@ const { VITE_ZEPLIN_CLIENT_ID, VITE_ZEPLIN_CLIENT_SECRET } = import.meta.env;
 
 let zeplin = new ZeplinApi();
 
+// Helper function to generate secure random string for code verifier
+function generateRandomString(length) {
+  const array = new Uint8Array(length);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, (byte) => ('0' + (byte & 0xFF).toString(16)).slice(-2)).join('');
+}
+
+// Helper function to calculate SHA-256 hash
+async function sha256(plain) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  const hash = await window.crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash), (byte) => `0${(byte & 0xFF).toString(16)}`.slice(-2)).join('');
+}
+
+// Generate code verifier and code challenge
+const codeVerifier = generateRandomString(64);
+const codeChallenge = await sha256(codeVerifier);
+
 const redirectUrl = zeplin.authorization.getAuthorizationUrl({
   clientId: VITE_ZEPLIN_CLIENT_ID,
-  redirectUri: 'http://localhost:5173/',
+  redirectUri: 'http://localhost:5173',
+  codeChallenge,
+  codeChallengeMethod: 'S256',
 });
 
 function Login() {
@@ -32,8 +53,8 @@ function Login() {
       const createTokenResponse = await zeplin.authorization.createToken({
         code,
         clientId: VITE_ZEPLIN_CLIENT_ID,
-        clientSecret: VITE_ZEPLIN_CLIENT_SECRET,
         redirectUri: 'http://localhost:5173/',
+        codeVerifier,
       });
       const { accessToken, refreshToken } = createTokenResponse.data;
       zeplin = new ZeplinApi(new Configuration({ accessToken }));
@@ -92,7 +113,7 @@ function Login() {
       {accessTokenAcquired && <div className="card">{username}</div>}
       {!accessTokenAcquired && (
         <div className="card">
-          <button>
+          <button type="button">
             <a href={redirectUrl}>Login</a>
           </button>
         </div>
