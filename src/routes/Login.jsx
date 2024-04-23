@@ -42,6 +42,8 @@ function Login() {
       setAccessTokenAcquired(true);
       // Update the Zeplin client context for access in other parts of app
     } catch (error) {
+      localStorage.removeItem('zeplinAccessToken');
+      localStorage.removeItem('zeplinRefreshToken');
       console.error('Error getting access token:', error);
     }
   }, [code]);
