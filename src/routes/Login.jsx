@@ -68,6 +68,8 @@ function Login() {
       localStorage.setItem('zeplinRefreshToken', refreshToken);
       setAccessTokenAcquired(true);
     } catch (error) {
+      localStorage.removeItem('zeplinAccessToken');
+      localStorage.removeItem('zeplinRefreshToken');
       console.error('Error getting access token:', error);
     }
   }, [code]);

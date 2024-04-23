@@ -74,9 +74,10 @@ form[action$="destroy"] button {
 }
 
 #root {
-  display: flex;
+  display: grid;
   height: 100%;
   width: 100%;
+  grid-template-columns: minmax(150px, 25%) 1fr;
 }
 
 #sidebar {
@@ -178,4 +179,9 @@ i {
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.login {
+  display: grid;
+  place-items: center;
 }
