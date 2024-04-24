@@ -4,8 +4,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import { ZeplinApi, Configuration } from '@zeplin/sdk';
-
-import { useWorkspaceId } from '../services/workspaceContext';
+import { useWorkspaceId } from '../providers/WorkspaceIdProvider';
 import getWorkspaces from '../services/getWorkspaces';
 
 const zeplin = new ZeplinApi(new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }));
@@ -14,7 +13,7 @@ const { VITE_ZEPLIN_CLIENT_ID, VITE_ZEPLIN_CLIENT_SECRET } = import.meta.env;
 function WorkspaceSelector() {
   const [workspaces, setWorkspaces] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { workspaceId, setWorkspaceId } = useWorkspaceId();
+  const { setWorkspaceId } = useWorkspaceId();
 
   const handleOnSelect = (e) => {
     const { value } = e.target;

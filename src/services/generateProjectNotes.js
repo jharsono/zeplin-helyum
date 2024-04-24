@@ -4,36 +4,33 @@ import axios from 'axios';
 import { json2csv } from 'json-2-csv';
 import pLimit from 'p-limit';
 
-// Zeplin API rate limit is 200 requests per user per minute.
-// Use rateLimit to extend Axios to only make 200 requests per minute (60,000ms)
 const http = rateLimit(axios.create(), { maxRequests: 180, perMilliseconds: 60000 });
 
-// Instantiate zeplin with access token, add our http client to the zeplin
 const zeplin = new ZeplinApi(
-  new Configuration(
-    { accessToken: localStorage.getItem('zeplinAccessToken') },
-  ),
+  new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }),
   undefined,
   http,
 );
-// Get all project screens while handling pagination
-const getProjectScreens = async (projectId, { offset = 0, limit = 15 } = {}) => {
+
+const getProjectScreens = async (projectId) => {
   let hasMoreData = true;
 
-  const fetchData = async (pageOffset) => {
-    const { data } = await zeplin.screens.getProjectScreens(projectId, { offset: pageOffset, limit });
+  const fetchData = async (offset = 0, limit = 15) => {
+    const { data } = await zeplin.screens.getProjectScreens(projectId, { offset, limit });
     return data;
   };
 
   const fetchAllPages = async () => {
     const result = [];
 
+    let offset = 0;
+    const limit = 15;
+
     while (hasMoreData) {
-      const data = await fetchData(offset);
+      const data = await fetchData(offset, limit);
       result.push(data);
       offset += limit;
 
-      // Update hasMoreData based on whether data was fetched
       if (data.length === 0) {
         hasMoreData = false;
       }
@@ -43,7 +40,6 @@ const getProjectScreens = async (projectId, { offset = 0, limit = 15 } = {}) => 
   };
 
   const pagesData = await fetchAllPages();
-  // Flatten the array of arrays to a single array and filter out screens without notes
   const allScreens = pagesData.flat();
   const screensWithNotes = allScreens.filter((screen) => screen.numberOfNotes > 0);
   const totalNumberOfNotes = allScreens.reduce((total, item) => total + item.numberOfNotes, 0);
@@ -60,10 +56,8 @@ const getSingleScreenNotes = async (screen, projectId, projectName) => {
   const { id, name: screenName } = screen;
   const { data } = await zeplin.screens.getScreenNotes(projectId, id);
 
-  // format the data for the CSV
   const parsedData = data.map((note) => {
     const flattenedComments = {};
-    // the first comment at index 0 is the original note. Start at index 1.
     let index = 1;
 
     while (index < note.comments.length) {
@@ -105,10 +99,9 @@ const generateProjectNotes = async (projectId) => {
   if (!notes || notes.length === 0) {
     throw new Error('No annotations found for the project.');
   }
-  // Get field names from the object keys for the annotation object we have created
+
   const fields = Object.keys(notes[0]);
 
-  // Format the JSON data to CSV
   const csv = json2csv(notes, { fields });
   return csv;
 };

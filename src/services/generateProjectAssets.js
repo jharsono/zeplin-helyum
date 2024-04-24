@@ -6,7 +6,6 @@ import pLimit from 'p-limit';
 
 const http = rateLimit(axios.create(), { maxRequests: 180, perMilliseconds: 60000 });
 
-// Instantiate zeplin with access token, add our http client to the zeplin
 const zeplin = new ZeplinApi(
   new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }),
   undefined,
@@ -22,7 +21,6 @@ const getAssetData = async (screen, projectId, formats) => {
   const { id, name } = screen;
   const { data } = await zeplin.screens.getLatestScreenVersion(projectId, id);
   return data.assets.flatMap(({ displayName, contents }) => {
-    // remove any asset that are not in the formats defined in PROJECT_OPTIONS.formats
     const filteredContents = contents.filter((content) => (
       formats.includes(content.format)
     ));
@@ -60,7 +58,6 @@ const generateProjectAssets = async (projectId, formats = []) => {
 
   await Promise.all(downloadAssetPromises);
 
-  // Generate the ZIP file blob
   const content = await zip.generateAsync({ type: 'blob' });
 
   return content;

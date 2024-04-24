@@ -5,10 +5,8 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import { ZeplinApi, Configuration } from '@zeplin/sdk';
-import { useWorkspaceId } from '../services/workspaceContext';
+import { useWorkspaceId } from '../providers/WorkspaceIdProvider';
 import getWorkspaceProjects from '../services/getWorkspaceProjects';
-
-const zeplin = new ZeplinApi(new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }));
 
 function ProjectSelector({ updateSelectedProjectState }) {
   const [projects, setProjects] = useState([]);
@@ -26,6 +24,7 @@ function ProjectSelector({ updateSelectedProjectState }) {
       try {
         // Check if workspaceId is not null before fetching projects
         if (workspaceId) {
+          const zeplin = getZeplinInstance();
           const data = await getWorkspaceProjects(workspaceId, zeplin);
           setProjects(data);
         }
@@ -39,6 +38,12 @@ function ProjectSelector({ updateSelectedProjectState }) {
       // Perform any cleanup (if needed)
     };
   }, [workspaceId]);
+
+  const getZeplinInstance = () => {
+    // Instantiate zeplin with access token from localStorage or any other source
+    // Modify this as per your application's access token retrieval logic
+    return new ZeplinApi(new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }));
+  };
 
   return (
     <FormControl fullWidth disabled={!workspaceId}>

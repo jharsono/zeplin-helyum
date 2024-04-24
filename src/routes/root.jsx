@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import WorkspaceSelector from '../components/WorkspaceSelector';
-import { WorkspaceIdProvider } from '../services/workspaceContext';
+import { WorkspaceIdProvider } from '../providers/WorkspaceIdProvider'; // Assuming correct path
 
 const pages = [
   {
