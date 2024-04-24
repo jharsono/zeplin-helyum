@@ -10,26 +10,17 @@ const zeplin = new ZeplinApi();
 function Login() {
   const [, setIsAuthorized] = useAuthorize();
   const [redirectUrl, setRedirectUrl] = useState('');
+
   const [searchParams] = useSearchParams();
   const code = searchParams.get('code');
 
-  function generateCodeVerifier() {
+  useEffect(() => {
+    // Generate code verifier once when the component mounts
     const cache = localStorage.getCodeVerifier();
-    if (cache) {
-      return cache;
+    if (!cache) {
+      generateCodeVerifier();
     }
-
-    const codeVerifierLength = 128;
-    const codeVerifierArray = new Uint8Array(codeVerifierLength);
-    crypto.getRandomValues(codeVerifierArray);
-    const codeVerifier = Array.from(codeVerifierArray)
-      .map((byte) => String.fromCharCode(byte))
-      .join('')
-      .replace(/[^A-Za-z0-9]/g, ''); // Remove non-alphanumeric characters
-
-    localStorage.setCodeVerifier(codeVerifier);
-    return codeVerifier;
-  }
+  }, []);
 
   useEffect(() => {
     if (!code) {
@@ -60,13 +51,29 @@ function Login() {
   }, [code, setIsAuthorized]);
 
   useEffect(() => {
+    const codeVerifier = localStorage.getCodeVerifier();
+    if (!codeVerifier) {
+      return;
+    }
     setRedirectUrl(zeplin.authorization.getAuthorizationUrl({
       clientId: VITE_ZEPLIN_CLIENT_ID,
       redirectUri: 'http://localhost:5173',
-      codeChallenge: generateCodeVerifier(),
+      codeChallenge: codeVerifier,
       codeChallengeMethod: 'plain',
     }));
   }, []);
+
+  function generateCodeVerifier() {
+    const codeVerifierLength = 128;
+    const codeVerifierArray = new Uint8Array(codeVerifierLength);
+    crypto.getRandomValues(codeVerifierArray);
+    const codeVerifier = Array.from(codeVerifierArray)
+      .map((byte) => String.fromCharCode(byte))
+      .join('')
+      .replace(/[^A-Za-z0-9]/g, ''); // Remove non-alphanumeric characters
+
+    localStorage.setCodeVerifier(codeVerifier);
+  }
 
   return (
     <div className="card">
