@@ -5,10 +5,12 @@ import { getAccessToken } from './localStorage';
 
 const http = rateLimit(axios.create(), { maxRequests: 180, perMilliseconds: 60000 });
 
-export default new ZeplinApi(
+const zeplin = new ZeplinApi(
   new Configuration(
-    { accessToken: getAccessToken },
+    { accessToken: getAccessToken() }, // You need to invoke the getAccessToken function here
   ),
   undefined,
   http,
 );
+
+export default zeplin;

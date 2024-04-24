@@ -1,16 +1,6 @@
-import { ZeplinApi, Configuration } from '@zeplin/sdk';
-import axios from 'axios';
 import JSZip from 'jszip';
-import rateLimit from 'axios-rate-limit';
 import pLimit from 'p-limit';
-
-const http = rateLimit(axios.create(), { maxRequests: 180, perMilliseconds: 60000 });
-
-const zeplin = new ZeplinApi(
-  new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }),
-  undefined,
-  http,
-);
+import zeplin from './zeplin';
 
 const getProjectScreens = async (projectId) => {
   const { data } = await zeplin.screens.getProjectScreens(projectId);
