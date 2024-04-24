@@ -13,6 +13,24 @@ function Login() {
   const [searchParams] = useSearchParams();
   const code = searchParams.get('code');
 
+  function generateCodeVerifier() {
+    const cache = localStorage.getCodeVerifier();
+    if (cache) {
+      return cache;
+    }
+
+    const codeVerifierLength = 128;
+    const codeVerifierArray = new Uint8Array(codeVerifierLength);
+    crypto.getRandomValues(codeVerifierArray);
+    const codeVerifier = Array.from(codeVerifierArray)
+      .map((byte) => String.fromCharCode(byte))
+      .join('')
+      .replace(/[^A-Za-z0-9]/g, ''); // Remove non-alphanumeric characters
+
+    localStorage.setCodeVerifier(codeVerifier);
+    return codeVerifier;
+  }
+
   useEffect(() => {
     if (!code) {
       return;
@@ -45,7 +63,7 @@ function Login() {
     setRedirectUrl(zeplin.authorization.getAuthorizationUrl({
       clientId: VITE_ZEPLIN_CLIENT_ID,
       redirectUri: 'http://localhost:5173',
-      codeChallenge: localStorage.getCodeVerifier(),
+      codeChallenge: generateCodeVerifier(),
       codeChallengeMethod: 'plain',
     }));
   }, []);
