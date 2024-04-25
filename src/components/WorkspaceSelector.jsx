@@ -3,12 +3,9 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
-import { ZeplinApi, Configuration } from '@zeplin/sdk';
 import { useWorkspaceId } from '../providers/WorkspaceIdProvider';
 import getWorkspaces from '../services/getWorkspaces';
-
-const zeplin = new ZeplinApi(new Configuration({ accessToken: localStorage.getItem('zeplinAccessToken') }));
-const { VITE_ZEPLIN_CLIENT_ID, VITE_ZEPLIN_CLIENT_SECRET } = import.meta.env;
+import zeplin from '../services/zeplin';
 
 function WorkspaceSelector() {
   const [workspaces, setWorkspaces] = useState([]);
@@ -23,7 +20,7 @@ function WorkspaceSelector() {
   useEffect(() => {
     const fetchWorkspaces = async () => {
       try {
-        const data = await getWorkspaces(zeplin, VITE_ZEPLIN_CLIENT_ID, VITE_ZEPLIN_CLIENT_SECRET);
+        const data = await getWorkspaces(zeplin);
         setWorkspaces(data);
         setLoading(false);
       } catch (error) {

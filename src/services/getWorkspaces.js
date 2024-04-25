@@ -17,7 +17,7 @@ const getWorkspaces = async (zeplin, clientId, clientSecret) => {
     } while (data.length === 100);
     return workspaces;
   } catch (error) {
-    generateRefreshToken(clientId, clientSecret);
+    // generateRefreshToken(clientId, clientSecret);
     console.error('Error fetching workspaces:', error);
 
     throw error; // Optional: rethrow the error to propagate it to the caller
