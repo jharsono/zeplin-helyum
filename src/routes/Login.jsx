@@ -1,105 +1,103 @@
-import React, {
-  useState, useEffect, useCallback,
-} from 'react';
-import { ZeplinApi, Configuration } from '@zeplin/sdk';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useSearchParams } from 'react-router-dom';
+import * as localStorage from '../services/localStorage';
+import { useAuthorize } from '../providers/AuthorizeProvider';
 
-const { VITE_ZEPLIN_CLIENT_ID, VITE_ZEPLIN_CLIENT_SECRET } = import.meta.env;
-
-let zeplin = new ZeplinApi();
-
-const redirectUrl = zeplin.authorization.getAuthorizationUrl({
-  clientId: VITE_ZEPLIN_CLIENT_ID,
-  redirectUri: 'http://localhost:5173/',
-});
+const { VITE_ZEPLIN_CLIENT_ID } = import.meta.env;
 
 function Login() {
-  const [code, setCode] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [accessTokenAcquired, setAccessTokenAcquired] = useState(false);
-  const [username, setUsername] = useState('');
+  const [, setIsAuthorized] = useAuthorize();
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [searchParams] = useSearchParams();
+  const code = searchParams.get('code');
 
-  const extractCodeFromURL = useCallback(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeParam = urlParams.get('code');
-    if (codeParam) {
-      setCode(codeParam);
-      setIsAuthorized(true);
+  function generateCodeVerifier() {
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~';
+    const codeVerifier = Array.from(crypto.getRandomValues(new Uint8Array(64)))
+      .map((x) => characters[x % characters.length])
+      .join('');
+    localStorage.setCodeVerifier(codeVerifier); // Save code verifier to local storage
+    console.log('Code Verifier:', codeVerifier);
+    return codeVerifier;
+  }
+
+  function generateCodeChallenge(codeVerifier) {
+    return new Promise((resolve, reject) => {
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier))
+        .then((buffer) => {
+          const hashArray = Array.from(new Uint8Array(buffer));
+          const hashBase64 = btoa(hashArray.map((b) => String.fromCharCode(b)).join(''));
+          const codeChallenge = hashBase64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+          console.log('Code Challenge:', codeChallenge);
+          resolve(codeChallenge);
+        })
+        .catch(reject);
+    });
+  }
+
+  useEffect(() => {
+    if (!code) {
+      return;
     }
-  }, []);
 
-  const getAccessToken = useCallback(async () => {
-    try {
-      const createTokenResponse = await zeplin.authorization.createToken({
-        code,
-        clientId: VITE_ZEPLIN_CLIENT_ID,
-        clientSecret: VITE_ZEPLIN_CLIENT_SECRET,
-        redirectUri: 'http://localhost:5173/',
+    async function getAccessToken() {
+      try {
+        const codeVerifier = localStorage.getCodeVerifier();
+        if (!codeVerifier) {
+          console.error('Code verifier not found in local storage');
+          return;
+        }
+
+        const tokenResponse = await axios.post('https://api.zeplin.dev/v1/oauth/token', {
+          code,
+          client_id: VITE_ZEPLIN_CLIENT_ID,
+          redirect_uri: 'http://localhost:5173/',
+          code_verifier: codeVerifier,
+          grant_type: 'authorization_code',
+        });
+        console.log(tokenResponse);
+        const { access_token: accessToken, refresh_token: refreshToken } = tokenResponse.data;
+        if (!accessToken || !refreshToken) {
+          console.error('Access token or refresh token is undefined');
+          return;
+        }
+
+        console.log('Setting access token:', accessToken);
+        localStorage.setAccessToken(accessToken);
+        localStorage.setRefreshToken(refreshToken);
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error('Error getting access token:', error);
+      }
+    }
+
+    getAccessToken();
+  }, [code, setIsAuthorized]);
+
+  useEffect(() => {
+    const codeVerifier = localStorage.getCodeVerifier() || generateCodeVerifier();
+    generateCodeChallenge(codeVerifier).then((codeChallenge) => {
+      setRedirectUrl(() => {
+        const authorizationParams = new URLSearchParams({
+          client_id: VITE_ZEPLIN_CLIENT_ID,
+          redirect_uri: 'http://localhost:5173',
+          code_challenge_method: 'S256',
+          code_challenge: codeChallenge,
+          response_type: 'code',
+        });
+
+        return `https://api.zeplin.dev/v1/oauth/authorize?${authorizationParams.toString()}`;
       });
-      const { accessToken, refreshToken } = createTokenResponse.data;
-      zeplin = new ZeplinApi(new Configuration({ accessToken }));
-      localStorage.setItem('zeplinAccessToken', accessToken);
-      localStorage.setItem('zeplinRefreshToken', refreshToken);
-      setAccessTokenAcquired(true);
-      // Update the Zeplin client context for access in other parts of app
-    } catch (error) {
-      localStorage.removeItem('zeplinAccessToken');
-      localStorage.removeItem('zeplinRefreshToken');
-      console.error('Error getting access token:', error);
-    }
-  }, [code]);
-
-  const redirectToRoot = useCallback(() => {
-    window.location.href = '/';
+    });
   }, []);
-
-  useEffect(() => {
-    if (!isAuthorized) {
-      extractCodeFromURL();
-    }
-    if (code && !accessTokenAcquired) {
-      getAccessToken();
-    }
-    if (accessTokenAcquired) {
-      redirectToRoot();
-    }
-  }, [
-    isAuthorized,
-    code,
-    accessTokenAcquired,
-    extractCodeFromURL,
-    getAccessToken,
-    redirectToRoot,
-  ]);
-
-  useEffect(() => {
-    if (!isAuthorized) {
-      extractCodeFromURL();
-    }
-    if (code && !accessTokenAcquired) {
-      getAccessToken();
-    }
-    if (accessTokenAcquired) {
-      redirectToRoot();
-    }
-  }, [
-    isAuthorized,
-    code,
-    accessTokenAcquired,
-    extractCodeFromURL,
-    getAccessToken,
-  ]);
 
   return (
-    <>
-      {accessTokenAcquired && <div className="card">{username}</div>}
-      {!accessTokenAcquired && (
-        <div className="card">
-          <button>
-            <a href={redirectUrl}>Login</a>
-          </button>
-        </div>
-      )}
-    </>
+    <div className="card">
+      <button type="button">
+        <a href={redirectUrl}>Login</a>
+      </button>
+    </div>
   );
 }
 
