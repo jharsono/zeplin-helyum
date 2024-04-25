@@ -1,6 +1,7 @@
 import generateRefreshToken from './generateRefreshToken';
+import zeplin from './zeplin';
 
-const getWorkspaces = async (zeplin, clientId, clientSecret) => {
+const getWorkspaces = async () => {
   try {
     const workspaces = [];
     let data;

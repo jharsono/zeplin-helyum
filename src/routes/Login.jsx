@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ZeplinApi } from '@zeplin/sdk';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import * as localStorage from '../services/localStorage';
 import { useAuthorize } from '../providers/AuthorizeProvider';
 
 const { VITE_ZEPLIN_CLIENT_ID } = import.meta.env;
-const zeplin = new ZeplinApi();
 
 function Login() {
   const [, setIsAuthorized] = useAuthorize();
@@ -58,8 +56,14 @@ function Login() {
           code_verifier: codeVerifier,
           grant_type: 'authorization_code',
         });
+        console.log(tokenResponse);
+        const { access_token: accessToken, refresh_token: refreshToken } = tokenResponse.data;
+        if (!accessToken || !refreshToken) {
+          console.error('Access token or refresh token is undefined');
+          return;
+        }
 
-        const { accessToken, refreshToken } = tokenResponse.data;
+        console.log('Setting access token:', accessToken);
         localStorage.setAccessToken(accessToken);
         localStorage.setRefreshToken(refreshToken);
         setIsAuthorized(true);
@@ -82,7 +86,7 @@ function Login() {
           code_challenge: codeChallenge,
           response_type: 'code',
         });
-      
+
         return `https://api.zeplin.dev/v1/oauth/authorize?${authorizationParams.toString()}`;
       });
     });

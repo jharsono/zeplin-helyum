@@ -5,12 +5,8 @@ const WorkspaceIdContext = createContext();
 export function WorkspaceIdProvider({ children }) {
   const [workspaceId, setWorkspaceId] = useState(null);
 
-  const updateWorkspaceId = (id) => {
-    setWorkspaceId(id);
-  };
-
   return (
-    <WorkspaceIdContext.Provider value={{ workspaceId, updateWorkspaceId }}>
+    <WorkspaceIdContext.Provider value={{ workspaceId, setWorkspaceId }}>
       {children}
     </WorkspaceIdContext.Provider>
   );
