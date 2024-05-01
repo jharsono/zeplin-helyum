@@ -2,6 +2,7 @@ import { ZeplinApi } from '@zeplin/sdk';
 
 const zeplin = new ZeplinApi();
 
+// TODO: add PKCE flow
 async function generateRefreshToken(clientId, clientSecret) {
   try {
     const refreshTokenResponse = await zeplin.authorization.refreshToken({

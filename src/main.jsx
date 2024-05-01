@@ -18,7 +18,7 @@ import { AuthorizeProvider, useAuthorize } from './providers/AuthorizeProvider';
 
 const privateRouter = createBrowserRouter([
   {
-    path: '/',
+    path: '/zeplin-helyum/',
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [

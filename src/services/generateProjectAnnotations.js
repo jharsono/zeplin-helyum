@@ -38,9 +38,12 @@ const getProjectName = async (projectId) => {
 };
 
 const getSingleScreenAnnotations = async (screen, projectId, projectName) => {
-  const { id, name: screenName } = screen;
-  const { data } = await zeplin.screens
-    .getScreenAnnotations(projectId, id);
+  const { id, name: screenName, numberOfAnnotations } = screen;
+  let data = [];
+  if (numberOfAnnotations) {
+    const response = await zeplin.screens.getScreenAnnotations(projectId, id);
+    data = response.data;
+  }
 
   const parsedData = data.map((item) => ({
     project: projectName,
