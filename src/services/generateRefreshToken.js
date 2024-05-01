@@ -13,9 +13,8 @@ async function generateRefreshToken(clientId, clientSecret) {
     localStorage.setItem('zeplinAccessToken', refreshTokenResponse.accessToken);
     return refreshTokenResponse;
   } catch (error) {
-    localStorage.removeItem('zeplinAccessToken');
-    localStorage.removeItem('zeplinRefreshToken');
-    console.log('clearing refresh and access tokens');
+    // localStorage.removeItem('zeplinAccessToken');
+    // localStorage.removeItem('zeplinRefreshToken');
     console.error('Error refreshing access token:', error);
     throw error;
   }
