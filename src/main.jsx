@@ -67,10 +67,10 @@ function Main() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <CssBaseline />
+  <>
+   <CssBaseline />
     <AuthorizeProvider>
       <Main />
     </AuthorizeProvider>
-  </React.StrictMode>,
+  </>,
 );
